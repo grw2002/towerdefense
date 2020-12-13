@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="asset/pwa.webmanifest">
+    <title>Village & Pillage</title>
+    <link href="asset/css/bootstrap.min.css" rel="stylesheet" />
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+
+        body {
+            color: #ddd;
+            background-color: black;
+        }
+
+        #bg {
+            background-image: url(asset/mc/body_bg_nether.jpg);
+            position: fixed;
+            z-index: -1;
+            width: 100%;
+            height: 100%
+        }
+
+        #app2 {
+            text-align: center;
+            width: 1024px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .modal-content {
+            background-color: black;
+        }
+
+        .line {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bg">
+        <div id="hint"
+            style="font-size:72px;position: absolute;left:50%;top:35%;transform:translate(-50%,-50%);font-family: serif;font-weight: 900;">
+            加载中……
+        </div>
+    </div>
+    <div id="app2" v-cloak>
+        <div style="height: 32px;"></div>
+        <div id="container"></div>
+        <div v-if="state.gamemode==='start'">
+            <img src="asset/mc/village_pillage.png"
+                style="position: absolute;width:80%;left:50%;top:216px;transform:translate(-50%,0);" />
+            <div class="line" style="position: absolute;top: 320px;left: 50%;transform:translate(-50%,0);">
+                <div class="btn-group">
+                    <button @click="showHelp" class="btn btn-success btn-lg">Help</button>
+                    <button @click="confirmStartGame" class="btn btn-primary btn-lg">Play</button>
+                    <button @click="confirmRandom" class="btn btn-info btn-lg">Random</button>
+                </div>
+            </div>
+        </div>
+        <div id="help" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog" style="max-width: unset;">
+                <div class="modal-content" style="display: unset;">
+                    <iframe v-if="helpShowing" src="asset/html/help.html" style="height: 544px;width:1024px; margin-top:16px;"></iframe>
+                    <div class="line">
+                        <button class="btn btn-secondary btn-lg" @click="closeHelp">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="state.gamemode==='stage'">
+            <div class="line" style="position: absolute;right: 16px;top: 32px;">
+                <div class="btn-group">
+                    <button v-if="state.timeron" class="btn btn-warning btn-sm" @click="togglePause">Pause</button>
+                    <template v-else>
+                        <button v-if="player.mode==='game'" class="btn btn-success btn-sm"
+                            @click="togglePause">Continue</button>
+                        <button class="btn btn-info btn-sm" @click="confirmReplay">Replay</button>
+                        <button v-if="player.mode==='victory'&&state.stageid<state.stages.length-1&&state.stageid!==-1"
+                            class="btn btn-success btn-sm" @click="confirmNextStage">Next Stage</button>
+                        <button id="backToStart" class="btn btn-primary btn-sm"
+                            @click="backToStart">BackToStart</button>
+                    </template>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right: 16px;top: 112px;">
+                <div class="btn-group">
+                    <div v-if="gameSpeed==false" id="speed1" class="btn btn-primary btn-sm" @click="toggleGameSpeed">1x
+                    </div>
+                    <div v-else id="speed2" class="btn btn-danger btn-sm" @click="toggleGameSpeed">2x</div>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right: 16px;top: 72px;">
+                <div class="btn-group">
+                    <button v-if="player.deployStatus===0" @click="setDeploying" class="btn btn-success btn-sm"
+                        :disabled="player.money < state.stage.heros[0].value">Hero(${{state.stage.heros[0].value}})</button>
+                    <button @click="calcelDeploying" class="btn btn-danger btn-sm" v-else>Cancel</button>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right:16px;bottom:0px;width: 256px;">
+                <div class="progress" style="height: 10px;width: 100%;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                        :style="{width: player.cd + '%'}">
+                        CD&nbsp;{{player.cd}}%</div>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right:16px;bottom:18px;width: 256px;">
+                <div class="progress" style="height: 10px;width: 100%;">
+                    <div class="progress-bar bg-danger progress-bar-animated progress-bar-striped" role="progressbar"
+                        :style="{width: player.home + '%'}">
+                        Home&nbsp;{{Math.floor(player.home)}}</div>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right:16px;bottom:36px;width: 256px;">
+                <div class="progress" style="height: 10px;width: 100%;">
+                    <div class="progress-bar bg-warning progress-bar-animated progress-bar-striped" role="progressbar"
+                        :style="{width: player.score*100/state.stage.target + '%'}">
+                        {{player.score}}</div>
+                </div>
+            </div>
+            <div class="line" style="position: absolute;right: 16px;top: 152px;">
+                Money {{player.money}}
+            </div>
+            <div class="line" style="position: absolute;left: 16px;bottom: 0;text-align: left;color: yellow;">
+                <h5 v-if="state.stageid!==-1">关卡 #{{state.stageid}}</h5>
+                <h5 v-else>seed#{{state.seed}}</h5>
+                <h5>{{state.stage.name}}</h5>
+            </div>
+        </div>
+        <div id="modal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{title}}</h5>
+                        <button type="button" class="close" @click="closeModal">
+                            <span style="color:white" aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <template v-if="mode === 'buildTower'">
+                        <div class="modal-body">
+                            <p>你当前有<code>${{player.money}}</code></p>
+                            <p v-for="(towerAbility,key) in tower.towerAbilitys">
+                                <img class="img-responsive" v-if="key==0" src="asset/png/tower_default.png" />
+                                <img class="img-responsive" v-else-if="key==1" src="asset/png/tower_secondary.png" />
+                                <img class="img-responsive" v-else-if="key==2" src="asset/png/tower_ice.png" />
+                                <label>&nbsp;{{towerAbility.name}}&nbsp;<code>${{towerAbility.costs[1]}}</code></label>
+                                <button v-if="towerAbility.costs[1]>player.money" type="button"
+                                    class="btn btn-outline-success btn-sm" disabled>余额不足</button>
+                                <button v-else-if="player.cd<100" class="btn btn-outline-success btn-sm"
+                                    disabled>冷却中，请等待</button>
+                                <button v-else class="btn btn-outline-success btn-sm"
+                                    @click="confirmBuildTower(key)">建塔！</button>
+                            </p>
+                        </div>
+                    </template>
+                    <template v-if="mode === 'alterTower'">
+                        <div class="modal-body">
+                            <p>你当前有<code>${{player.money}}</code></p>
+                            <p v-if="tower.upgradeAble!==1">升级此塔需花费<code>${{tower.cost}}</code>&nbsp;
+                                <button v-if="tower.upgradeAble===2" class="btn btn-outline-primary btn-sm"
+                                    disabled>游戏币不足</button>
+                                <button v-else-if="player.cd<100" class="btn btn-outline-primary btn-sm"
+                                    disabled>冷却中，请等待</button>
+                                <button v-else @click="confirmUpgradeTower"
+                                    class="btn btn-outline-primary btn-sm">升级</button>
+                            </p>
+                            <p v-else>该塔已达最高等级，不可升级</p>
+                            <p>售卖将返还<code>${{tower.refund}}</code>&nbsp;<button @click="confirmRemoveTower"
+                                    class="btn btn-outline-danger btn-sm">售卖</button></p>
+                        </div>
+                    </template>
+                    <template v-if="player.mode === 'gameover'">
+                        <div class="modal-body text-center">
+                            <h1>Gameover</h1>
+                            <div class="btn-group">
+                                <button id="backToStart" class="btn btn-primary"
+                                    @click="backToStart">BackToStart</button>
+                                <button class="btn btn-info" @click="confirmReplay">Replay</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="player.mode === 'victory'">
+                        <div class="modal-body text-center">
+                            <h1>Victory!</h1>
+                            <div class="btn-group">
+                                <button class="btn btn-info" @click="confirmReplay">Replay</button>
+                                <button v-if="state.stageid<state.stages.length-1&&state.stageid!==-1"
+                                    class="btn btn-success" @click="confirmNextStage">Next Stage</button>
+                                <button id="backToStart" class="btn btn-primary"
+                                    @click="backToStart">BackToStart</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="http://www.beian.gov.cn/portal/index.do" target="_blank" style="text-decoration:none;color:#ddd;position: fixed;bottom: 0;left:50%;transform: translate(-50%,0);">滇ICP备20005900号-1</a>
+    <script src="asset/js/jquery.slim.min.js"></script>
+    <script src="asset/js/bootstrap.min.js"></script>
+    <script src="asset/js/vue.min.js"></script>
+</body>
+
+</html>

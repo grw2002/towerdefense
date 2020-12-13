@@ -1,0 +1,15 @@
+{
+  "background_color": "black",
+  "description": "Village & Pillage is an impletion of our Big Homework TowerDefense by grw20",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "asset/icon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ],
+  "name": "Village & Pillage",
+  "short_name": "V&P",
+  "start_url": "/td/index.html"
+}

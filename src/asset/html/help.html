@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8" />
+    <style type="text/css">
+        body {
+            background-color: black;
+        }
+
+        h1 mark,
+        h3 mark,
+        p mark {
+            color: black !important;
+            background-color: orange !important;
+            border-radius: 5px;
+        }
+
+        img {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="width: 100%; height:  512px; margin: 0 auto;" id="app">
+    </div>
+    <script src="js/presenta.min.js"></script>
+    <script>
+        var router;
+        new Presenta('#app', {
+            colors: '',
+            fonts: 'creeper',
+            colorVar: 'sec',
+            transition: 'vSlide',
+            scenes: [
+                {
+                    layout: 'rows',
+                    steps: 'section',
+                    blocks: [{
+                        type: 'text',
+                        textVar: 'title',
+                        text: `<div>
+                                <h1>很久很久<mark>以前</mark></h1>
+                            </div><br/>
+                            <section data-order="1">
+                                <h1><mark>僵尸</mark>突然出现</h1>
+                            </section><br/>
+                            <section data-order="2">
+                                <h1>带来<mark>灾难</mark>带走了<mark>村民</mark></h1>
+                                <h1>又消失不见</h1>
+                            </section>`,
+                        scale: '1'
+                    }]
+                }, {
+                    layout: 'rows',
+                    steps: 'section',
+                    blocks: [
+                        {
+                            type: 'text',
+                            textVar: 'title',
+                            text: `<div>
+                                <h1>村庄十分危险</h1>
+                                <h1>世间谁最勇敢</h1>
+                            </div>
+                            <section data-order="1">
+                                <h1>一只<mark>Steve</mark>赶来大声喊：</h1>
+                            </section><br/>
+                            <section data-order="2">
+                                <h1>用<mark>大作业</mark>保卫村庄！</h1>
+                            </section>`,
+                            scale: '1'
+                        }]
+                },
+                {
+                    layout: 'right',
+                    blocks: [, {
+                        type: 'text',
+                        textVar: 'title',
+                        text: '<h1>Help</h1>'
+                    }, {
+                            type: 'text',
+                            // steps: 'p',
+                            text: `<div style="text-align:left;">
+                        <p>点击塔基<img src="../mc/block/soul_sand.png"/>可以建塔</p>
+                        <p>点击已经建好的塔可以<mark>升级</mark>或<mark>售卖</mark></p>
+                        <li><p>升级可以使塔拥有更快的攻速、攻击力、攻击范围</p></li>
+                        <li><p>售卖塔可以获得一定的资金返还</p></li>
+                        <p>建塔、升级塔有冷却时间，售卖塔不受冷却时间限制</p>
+                        <hr/>
+                        <p>初始游戏币：100</p>
+                        <p>村庄血量：100，降至0即为失败</p>
+                        <p>敌人是无限的，累计击杀积分达到目标即为胜利，你能撑到最后吗？</p>
+                        <p>不过瘾？试一试随机模式！</p>
+                        </div>
+                        `,
+                            scale: '1'
+                        }]
+                }, {
+                    layout: 'right',
+                    blocks: [, {
+                        type: 'text',
+                        textVar: 'title',
+                        text: '<h1>图鉴</h1>'
+                    }, {
+                            type: 'text',
+                            // steps: 'p',
+                            text: `<div style="text-align:left;">
+                        <p><img src="../png/tower_default.png"/>博雅塔：速攻，廉价，低攻击力</p>
+                        <p><img src="../png/tower_secondary.png"/>烈焰塔：可以使一定范围内的地面暂时变为熔岩，造成伤害</p>
+                        <p><img src="../png/tower_ice.png"/>大霜塔：可以使一定范围内的地面暂时霜冻，降低行进速度</p>
+                            </div>
+                        `,
+                            scale: '1'
+                        }]
+                },
+                {
+                    layout: 'right',
+                    blocks: [, {
+                        type: 'text',
+                        textVar: 'title',
+                        text: '<h1>图鉴</h1>'
+                    }, {
+                            type: 'text',
+                            // steps: 'p',
+                            text: `<div style="text-align:left;">
+                        <p><img src="../mc/unit/zombie/walk/1.png"/>Zombie[Attacker]：会打Steve</p>
+                        <p><img src="../mc/unit/creeper/walk/1.png"/>Creeper[Attacker]：被Steve攻击后就会炸，aw...man</p>
+                        <hr/>
+                        <p><img src="../mc/unit/steve/walk/1.png"/>Steve[Defender]：会自动攻击Zombie和Creeper，你可以花费游戏币来部署</p>
+                        <p>点击右上角的<mark>Hero</mark>按钮来启动部署</p>
+                            </div>
+                        `,
+                            scale: '1'
+                        }]
+                }, 
+                {
+                    layout: 'pile',
+                    blocks: [{
+                        type: 'text',
+                        testVar: 'title',
+                        steps: 'section',
+                        text: `<h1>Village & <mark>Pillage</mark></h1>
+                        <h3>村庄与掠夺</h3>
+                        <section>
+                        <hr/>
+                        <p>Developer: 郭镕玮</p>
+                        <p>Email: grw20@mails.tsinghua.edu.cn</p>
+                        <p>程序设计基础 大作业 / 指导教师 刘玉身</p>
+                        <p>2020.12</p>
+                        </section>`,
+                        scale: '1'
+                    }]
+                },],
+            controllers: {
+                keyboard: true,
+                arrows: true,
+                focus: true
+            },
+        }).then(preso => {
+            router = preso.router
+        });
+        document.getElementById('app').addEventListener('click', e => {
+            router.next()
+        });
+    </script>
+</body>
+
+</html>
